@@ -1,0 +1,7 @@
+import jwt from 'jsonwebtoken';
+import { getAuth } from 'firebase-admin/auth';
+import { env } from '../config/env.js';
+import { prisma } from '../prisma/client.js';
+import { AppError } from '../utils/app-error.js';
+export async function requireUser(req, res, next) { try { const token = req.headers.authorization?.replace(/^Bearer\s+/i, ''); if (!token) throw new AppError(401, 'Authentication required', 'UNAUTHENTICATED'); const decoded = await getAuth().verifyIdToken(token); const user = await prisma.user.upsert({ where: { firebaseUid: decoded.uid }, update: { name: decoded.name ?? undefined, email: decoded.email ?? undefined, avatar: decoded.picture ?? undefined }, create: { firebaseUid: decoded.uid, name: decoded.name, email: decoded.email, avatar: decoded.picture } }); req.user = user; next(); } catch (error) { next(error instanceof AppError ? error : new AppError(401, 'Invalid Firebase token', 'UNAUTHENTICATED')); } }
+export function requireAdmin(...roles) { return (req, res, next) => { try { const token = req.headers.authorization?.replace(/^Bearer\s+/i, ''); const payload = jwt.verify(token || '', env.JWT_SECRET); if (payload.type !== 'admin' || (roles.length && !roles.includes(payload.role))) throw new AppError(403, 'Admin access required', 'FORBIDDEN'); req.admin = payload; next(); } catch (error) { next(error instanceof AppError ? error : new AppError(401, 'Invalid admin token', 'UNAUTHENTICATED')); } }; }

@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { publicController } from '../controllers/public.controller.js';
+import { validate } from '../middleware/validate.js';
+import { pagination } from '../validators/schemas.js';
+const r = Router();
+r.get('/videos', validate(pagination), publicController.listVideos);
+r.get('/videos/featured', publicController.featured);
+r.get('/videos/trending', publicController.trending);
+r.get('/videos/category/:id', validate(pagination), (req, res, next) => { req.query.categoryId = req.params.id; next(); }, publicController.listVideos);
+r.get('/videos/:id', publicController.video);
+r.get('/search', publicController.search);
+r.get('/categories', publicController.categories);
+export default r;

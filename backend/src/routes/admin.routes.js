@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { adminController } from '../controllers/admin.controller.js';
+import { requireAdmin } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { adminLogin, categoryInput, videoUpdate } from '../validators/schemas.js';
+import { videoUpload } from '../middleware/upload.js';
+const r = Router();
+r.post('/login', validate(adminLogin), adminController.login);
+r.use(requireAdmin('SUPER_ADMIN', 'ADMIN', 'EDITOR'));
+r.get('/analytics', adminController.analytics); r.post('/videos', videoUpload, adminController.upload); r.put('/videos/:id', validate(videoUpdate), adminController.updateVideo); r.delete('/videos/:id', adminController.deleteVideo);
+r.post('/categories', validate(categoryInput), adminController.createCategory); r.put('/categories/:id', validate(categoryInput), adminController.updateCategory); r.delete('/categories/:id', adminController.deleteCategory);
+export default r;

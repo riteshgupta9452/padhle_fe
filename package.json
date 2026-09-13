@@ -1,0 +1,5 @@
+{
+  "name": "padhle-video-platform",
+  "private": true,
+  "scripts": { "dev": "npm --prefix backend run dev", "test": "npm --prefix backend test" }
+}

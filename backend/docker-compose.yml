@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes: [uploads:/tmp/padhle/uploads]
+  postgres:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: padhle, POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres }
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U postgres -d padhle"], interval: 5s, timeout: 5s, retries: 10 }
+    volumes: [postgres:/var/lib/postgresql/data]
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 5s, timeout: 3s, retries: 10 }
+    volumes: [redis:/data]
+  nginx:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    depends_on: [api]
+    volumes: [./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro]
+volumes: { postgres: {}, redis: {}, uploads: {} }

@@ -1,0 +1,2 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart'; import '../repositories/video_repository.dart'; import '../services/api_client.dart'; import '../models/video.dart';
+final apiClientProvider = Provider((_) => ApiClient()); final videoRepositoryProvider = Provider((r) => VideoRepository(r.read(apiClientProvider))); final featuredProvider = FutureProvider<List<Video>>((r) => r.read(videoRepositoryProvider).featured());
